@@ -24,16 +24,13 @@ jobs:
       with:
         packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
     
-    - name: Install Gradle
-      run: |
-        wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
-        unzip -q gradle-8.2-bin.zip
-        export PATH=$PATH:$PWD/gradle-8.2/bin
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.2'
     
     - name: Build APK
-      run: |
-        export PATH=$PATH:$PWD/gradle-8.2/bin
-        gradle assembleDebug
+      run: gradle assembleDebug
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
