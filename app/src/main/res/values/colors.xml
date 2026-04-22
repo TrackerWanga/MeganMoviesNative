@@ -6,4 +6,5 @@
     <color name="surface">#131a28</color>
     <color name="white">#ffffff</color>
     <color name="text_secondary">#a1a1aa</color>
+    <color name="ic_launcher_background">#e50914</color>
 </resources>
