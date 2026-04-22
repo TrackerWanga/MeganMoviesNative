@@ -24,11 +24,16 @@ jobs:
       with:
         packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
     
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Install Gradle
+      run: |
+        wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
+        unzip -q gradle-8.2-bin.zip
+        export PATH=$PATH:$PWD/gradle-8.2/bin
     
     - name: Build APK
-      run: ./gradlew assembleDebug
+      run: |
+        export PATH=$PATH:$PWD/gradle-8.2/bin
+        gradle assembleDebug
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
