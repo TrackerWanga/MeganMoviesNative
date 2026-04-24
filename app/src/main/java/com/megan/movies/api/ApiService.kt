@@ -1,7 +1,6 @@
 package com.megan.movies.api
 
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -38,7 +37,7 @@ object ApiService {
                 val response = client.newCall(request).execute()
                 val body = response.body?.string() ?: return@withContext emptyList<Movie>()
                 
-                val data: ApiResponse = gson.fromJson(body, ApiResponse::class.java)
+                val data: TrendingResponse = gson.fromJson(body, TrendingResponse::class.java)
                 data.trending?.map { parseMovie(it) } ?: emptyList()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -110,7 +109,7 @@ object ApiService {
         }
     }
 
-    // Fetch banners
+    // Fetch banners - FIXED: banners are directly at root level
     suspend fun fetchBanners(): List<Banner> {
         return withContext(Dispatchers.IO) {
             try {
@@ -122,7 +121,10 @@ object ApiService {
                 val response = client.newCall(request).execute()
                 val body = response.body?.string() ?: return@withContext emptyList<Banner>()
                 
+                // The API returns { "success": true, "total": 11, "banners": [...] }
+                // banners is directly at root, NOT nested in data
                 val data: BannerResponse = gson.fromJson(body, BannerResponse::class.java)
+                println("API Response: total=${data.total}, banners count=${data.banners?.size ?: 0}")
                 data.banners ?: emptyList()
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -40,29 +40,40 @@ data class Trailer(
     val duration: Int
 )
 
+// Banner model - matches actual API response
 data class Banner(
     val title: String?,
     val subject_id: String?,
     val detail_path: String?,
     val type: String?,
-    val image: BannerImage?
+    val image: BannerImage?,
+    val source: String?
 )
 
 data class BannerImage(
     val url: String?
 )
 
-// API Response models
-data class ApiResponse(
+// API Response models - FIXED to match actual API structure
+
+// Trending: { "success": true, "total": 40, "trending": [...] }
+data class TrendingResponse(
+    val success: Boolean?,
+    val total: Int?,
     val trending: List<MovieItem>?
 )
 
-data class SearchResponse(
-    val results: List<MovieItem>?
+// Banners: { "success": true, "total": 11, "banners": [...] }
+data class BannerResponse(
+    val success: Boolean?,
+    val total: Int?,
+    val banners: List<Banner>?
 )
 
-data class BannerResponse(
-    val banners: List<Banner>?
+// Search: { "success": true, "results": [...] }
+data class SearchResponse(
+    val success: Boolean?,
+    val results: List<MovieItem>?
 )
 
 data class MovieItem(
@@ -90,6 +101,7 @@ data class MovieItem(
 )
 
 data class MovieDetailResponse(
+    val success: Boolean?,
     val data: MovieDetailData?
 )
 
@@ -117,6 +129,7 @@ data class CastData(val name: String?, val character: String?, val avatar: Strin
 data class TrailerData(val url: String?, val duration: Int?)
 
 data class HomepageData(
+    val success: Boolean?,
     val banners: List<Banner>?,
     val trending: List<Movie>?
 )
