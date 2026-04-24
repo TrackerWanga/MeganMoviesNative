@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.megan.movies.R
 import com.megan.movies.api.Banner
-import com.squareup.picasso.Picasso
+import com.megan.movies.util.ImageLoader
 
 class HeroSlider(
     private val viewPager: ViewPager2,
@@ -126,19 +126,16 @@ class BannerAdapter(
         private val image: ImageView = itemView.findViewById(R.id.bannerImage)
         
         fun bind(banner: Banner, onClick: (Banner) -> Unit) {
-            val imageUrl = banner.image?.url
-            
-            if (!imageUrl.isNullOrEmpty()) {
-                Picasso.get()
-                    .load(imageUrl)
-                    .placeholder(android.R.color.darker_gray)
-                    .error(android.R.color.holo_red_dark)
-                    .centerCrop()
-                    .fit()
-                    .into(image)
-            } else {
-                image.setBackgroundColor(0xFFe50914.toInt())
-            }
+            ImageLoader.load(
+                url = banner.image?.url,
+                imageView = image,
+                width = itemView.context.resources.displayMetrics.widthPixels,
+                height = (200 * itemView.context.resources.displayMetrics.density).toInt(),
+                placeholder = android.R.color.darker_gray,
+                error = 0xFFe50914.toInt(),
+                onSuccess = { /* Image loaded successfully */ },
+                onError = { image.setBackgroundColor(0xFFe50914.toInt()) }
+            )
             
             itemView.setOnClickListener { onClick(banner) }
         }

@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -30,6 +29,10 @@ class MainActivity : AppCompatActivity() {
         setupFooter()
         setupSearch()
         
+        // Show shimmer immediately
+        trendingAdapter.showShimmer()
+        
+        // Load data with retry
         loadAllSections()
     }
     
@@ -40,9 +43,7 @@ class MainActivity : AppCompatActivity() {
         val typeText = findViewById<TextView>(R.id.bannerType)
         
         heroSlider = HeroSlider(viewPager, dotsContainer, titleText, typeText) { banner ->
-            // Open banner detail
             Toast.makeText(this, "Opening: ${banner.title}", Toast.LENGTH_SHORT).show()
-            // TODO: Navigate to movie/series detail
         }
     }
     
@@ -51,7 +52,6 @@ class MainActivity : AppCompatActivity() {
         trendingRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         trendingAdapter = MovieAdapter { movie ->
             Toast.makeText(this, "Clicked: ${movie.title}", Toast.LENGTH_SHORT).show()
-            // TODO: Navigate to movie detail
         }
         trendingRecycler.adapter = trendingAdapter
     }
@@ -83,26 +83,33 @@ class MainActivity : AppCompatActivity() {
                 // Load banners
                 val banners = ApiService.fetchBanners()
                 heroSlider.setBanners(banners)
-                Toast.makeText(this@MainActivity, "Loaded ${banners.size} banners", Toast.LENGTH_SHORT).show()
                 
                 // Load trending
                 val trending = ApiService.fetchTrending()
                 trendingAdapter.submitList(trending)
-                Toast.makeText(this@MainActivity, "Loaded ${trending.size} trending", Toast.LENGTH_SHORT).show()
                 
-                // Load other sections
-                val action = ApiService.fetchActionMovies()
-                val horror = ApiService.fetchHorrorMovies()
-                val anime = ApiService.fetchAnime()
-                Toast.makeText(this@MainActivity, "Loaded: Action=${action.size}, Horror=${horror.size}, Anime=${anime.size}", Toast.LENGTH_SHORT).show()
+                // Preload next images for smooth scrolling
+                val nextUrls = (trending + banners.mapNotNull { it.image?.url }).take(20)
+                com.megan.movies.util.ImageLoader.preload(nextUrls)
                 
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Failed to load content: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity, "Retrying...", Toast.LENGTH_SHORT).show()
+                // Retry once
+                try {
+                    delay(1000)
+                    val banners = ApiService.fetchBanners()
+                    heroSlider.setBanners(banners)
+                    val trending = ApiService.fetchTrending()
+                    trendingAdapter.submitList(trending)
+                } catch (e2: Exception) {
+                    Toast.makeText(this@MainActivity, "Failed to load content", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
     
     private fun searchMovies(query: String) {
+        trendingAdapter.showShimmer()
         scope.launch {
             try {
                 val results = ApiService.searchMovies(query)
