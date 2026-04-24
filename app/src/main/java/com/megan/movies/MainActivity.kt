@@ -9,8 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.megan.movies.api.ApiService
-import com.megan.movies.api.Banner
-import com.megan.movies.api.Movie
 import com.megan.movies.ui.HeroSlider
 import com.megan.movies.util.ImageLoader
 import kotlinx.coroutines.*
@@ -59,9 +57,7 @@ class MainActivity : AppCompatActivity() {
         searchInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
                 val query = searchInput.text.toString()
-                if (query.isNotBlank()) {
-                    searchMovies(query)
-                }
+                if (query.isNotBlank()) searchMovies(query)
                 true
             } else false
         }
@@ -70,8 +66,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupFooter() {
         val footerLink = findViewById<TextView>(R.id.footerLink)
         footerLink.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://movies.megan.qzz.io"))
-            startActivity(intent)
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://movies.megan.qzz.io")))
         }
     }
     
@@ -80,18 +75,12 @@ class MainActivity : AppCompatActivity() {
             try {
                 val banners = ApiService.fetchBanners()
                 heroSlider.setBanners(banners)
-                
                 val trending = ApiService.fetchTrending()
                 trendingAdapter.submitList(trending)
-                
-                // Build list of image URLs to preload (Strings only)
                 val posterUrls = trending.mapNotNull { it.poster }.filter { it.isNotEmpty() }
                 val bannerUrls = banners.mapNotNull { it.image?.url }.filter { it.isNotEmpty() }
-                val urlsToPreload = (posterUrls + bannerUrls).take(20)
-                ImageLoader.preload(urlsToPreload)
-                
+                ImageLoader.preload(posterUrls + bannerUrls)
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Retrying...", Toast.LENGTH_SHORT).show()
                 try {
                     delay(1000)
                     val banners = ApiService.fetchBanners()
@@ -111,10 +100,18 @@ class MainActivity : AppCompatActivity() {
             try {
                 val results = ApiService.searchMovies(query)
                 trendingAdapter.submitList(results)
-                Toast.makeText(this@MainActivity, "Found ${results.size} results", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(this@MainActivity, "Search failed", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+    
+    override fun onBackPressed() {
+        // If there are fragments on the back stack, pop them
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        } else {
+            super.onBackPressed()
         }
     }
     
