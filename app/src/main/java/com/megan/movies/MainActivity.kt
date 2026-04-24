@@ -12,6 +12,7 @@ import com.megan.movies.api.ApiService
 import com.megan.movies.api.Banner
 import com.megan.movies.api.Movie
 import com.megan.movies.ui.HeroSlider
+import com.megan.movies.util.ImageLoader
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
@@ -29,10 +30,7 @@ class MainActivity : AppCompatActivity() {
         setupFooter()
         setupSearch()
         
-        // Show shimmer immediately
         trendingAdapter.showShimmer()
-        
-        // Load data with retry
         loadAllSections()
     }
     
@@ -80,21 +78,20 @@ class MainActivity : AppCompatActivity() {
     private fun loadAllSections() {
         scope.launch {
             try {
-                // Load banners
                 val banners = ApiService.fetchBanners()
                 heroSlider.setBanners(banners)
                 
-                // Load trending
                 val trending = ApiService.fetchTrending()
                 trendingAdapter.submitList(trending)
                 
-                // Preload next images for smooth scrolling
-                val nextUrls = (trending + banners.mapNotNull { it.image?.url }).take(20)
-                com.megan.movies.util.ImageLoader.preload(nextUrls)
+                // Build list of image URLs to preload (Strings only)
+                val posterUrls = trending.mapNotNull { it.poster }.filter { it.isNotEmpty() }
+                val bannerUrls = banners.mapNotNull { it.image?.url }.filter { it.isNotEmpty() }
+                val urlsToPreload = (posterUrls + bannerUrls).take(20)
+                ImageLoader.preload(urlsToPreload)
                 
             } catch (e: Exception) {
                 Toast.makeText(this@MainActivity, "Retrying...", Toast.LENGTH_SHORT).show()
-                // Retry once
                 try {
                     delay(1000)
                     val banners = ApiService.fetchBanners()
