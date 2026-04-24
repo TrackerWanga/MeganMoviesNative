@@ -5,10 +5,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.megan.movies.api.ApiService
+import com.megan.movies.api.Movie
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     
     private lateinit var movieAdapter: MovieAdapter
+    private val scope = CoroutineScope(Dispatchers.Main + Job())
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,8 +20,7 @@ class MainActivity : AppCompatActivity() {
         
         setupRecyclerView()
         loadMovies()
-        
-        Toast.makeText(this, "Welcome to Megan Movies!", Toast.LENGTH_SHORT).show()
+        loadBanners()
     }
     
     private fun setupRecyclerView() {
@@ -26,17 +29,36 @@ class MainActivity : AppCompatActivity() {
         
         movieAdapter = MovieAdapter { movie ->
             Toast.makeText(this, "Clicked: ${movie.title}", Toast.LENGTH_SHORT).show()
+            // TODO: Navigate to movie detail screen
         }
         recyclerView.adapter = movieAdapter
     }
     
     private fun loadMovies() {
-        val movies = listOf(
-            Movie("The Boys", "2019", "8.6", "https://image.tmdb.org/t/p/w500/example.jpg"),
-            Movie("Invincible", "2021", "8.7", "https://image.tmdb.org/t/p/w500/example.jpg"),
-            Movie("Hoppers", "2026", "6.2", "https://image.tmdb.org/t/p/w500/example.jpg"),
-            Movie("Project Hail Mary", "2026", "8.4", "https://image.tmdb.org/t/p/w500/example.jpg")
-        )
-        movieAdapter.submitList(movies)
+        scope.launch {
+            try {
+                val movies = ApiService.fetchTrending()
+                movieAdapter.submitList(movies)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Failed to load movies", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun loadBanners() {
+        scope.launch {
+            try {
+                val banners = ApiService.fetchBanners()
+                // TODO: Set up banner carousel
+                Toast.makeText(this@MainActivity, "Loaded ${banners.size} banners", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                // Silent fail for banners
+            }
+        }
+    }
+    
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 }

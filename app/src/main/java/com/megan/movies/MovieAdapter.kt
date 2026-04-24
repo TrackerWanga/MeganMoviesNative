@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.megan.movies.api.Movie
 
 class MovieAdapter(
     private val onItemClick: (Movie) -> Unit
@@ -38,11 +40,18 @@ class MovieAdapter(
         
         fun bind(movie: Movie) {
             title.text = movie.title
-            year.text = movie.year
-            rating.text = "⭐ ${movie.rating}"
+            year.text = movie.year?.toString() ?: ""
+            rating.text = if (movie.rating != null) "⭐ ${movie.rating}" else ""
             
-            // Placeholder color instead of actual image loading
-            poster.setBackgroundColor(android.graphics.Color.parseColor("#e50914"))
+            // Load poster with Glide
+            if (movie.poster.isNotEmpty()) {
+                Glide.with(itemView.context)
+                    .load(movie.poster)
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .into(poster)
+            } else {
+                poster.setBackgroundColor(android.graphics.Color.parseColor("#e50914"))
+            }
             
             itemView.setOnClickListener {
                 onItemClick(movie)
