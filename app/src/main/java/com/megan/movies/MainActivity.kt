@@ -1,58 +1,115 @@
 package com.megan.movies
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.megan.movies.api.ApiService
+import com.megan.movies.api.Banner
 import com.megan.movies.api.Movie
+import com.megan.movies.ui.HeroSlider
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     
-    private lateinit var movieAdapter: MovieAdapter
+    private lateinit var heroSlider: HeroSlider
+    private lateinit var trendingAdapter: MovieAdapter
     private val scope = CoroutineScope(Dispatchers.Main + Job())
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
-        setupRecyclerView()
-        loadMovies()
-        loadBanners()
-    }
-    
-    private fun setupRecyclerView() {
-        val recyclerView = findViewById<RecyclerView>(R.id.movieList)
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
+        setupHeroSlider()
+        setupTrending()
+        setupFooter()
+        setupSearch()
         
-        movieAdapter = MovieAdapter { movie ->
-            Toast.makeText(this, "Clicked: ${movie.title}", Toast.LENGTH_SHORT).show()
-            // TODO: Navigate to movie detail screen
-        }
-        recyclerView.adapter = movieAdapter
+        loadAllSections()
     }
     
-    private fun loadMovies() {
+    private fun setupHeroSlider() {
+        val viewPager = findViewById<ViewPager2>(R.id.heroViewPager)
+        val dotsContainer = findViewById<LinearLayout>(R.id.dotsContainer)
+        val titleText = findViewById<TextView>(R.id.bannerTitle)
+        val typeText = findViewById<TextView>(R.id.bannerType)
+        
+        heroSlider = HeroSlider(viewPager, dotsContainer, titleText, typeText) { banner ->
+            // Open banner detail
+            Toast.makeText(this, "Opening: ${banner.title}", Toast.LENGTH_SHORT).show()
+            // TODO: Navigate to movie/series detail
+        }
+    }
+    
+    private fun setupTrending() {
+        val trendingRecycler = findViewById<RecyclerView>(R.id.trendingRecycler)
+        trendingRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        trendingAdapter = MovieAdapter { movie ->
+            Toast.makeText(this, "Clicked: ${movie.title}", Toast.LENGTH_SHORT).show()
+            // TODO: Navigate to movie detail
+        }
+        trendingRecycler.adapter = trendingAdapter
+    }
+    
+    private fun setupSearch() {
+        val searchInput = findViewById<EditText>(R.id.searchInput)
+        searchInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                val query = searchInput.text.toString()
+                if (query.isNotBlank()) {
+                    searchMovies(query)
+                }
+                true
+            } else false
+        }
+    }
+    
+    private fun setupFooter() {
+        val footerLink = findViewById<TextView>(R.id.footerLink)
+        footerLink.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://movies.megan.qzz.io"))
+            startActivity(intent)
+        }
+    }
+    
+    private fun loadAllSections() {
         scope.launch {
             try {
-                val movies = ApiService.fetchTrending()
-                movieAdapter.submitList(movies)
+                // Load banners
+                val banners = ApiService.fetchBanners()
+                heroSlider.setBanners(banners)
+                Toast.makeText(this@MainActivity, "Loaded ${banners.size} banners", Toast.LENGTH_SHORT).show()
+                
+                // Load trending
+                val trending = ApiService.fetchTrending()
+                trendingAdapter.submitList(trending)
+                Toast.makeText(this@MainActivity, "Loaded ${trending.size} trending", Toast.LENGTH_SHORT).show()
+                
+                // Load other sections
+                val action = ApiService.fetchActionMovies()
+                val horror = ApiService.fetchHorrorMovies()
+                val anime = ApiService.fetchAnime()
+                Toast.makeText(this@MainActivity, "Loaded: Action=${action.size}, Horror=${horror.size}, Anime=${anime.size}", Toast.LENGTH_SHORT).show()
+                
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Failed to load movies", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Failed to load content: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
     
-    private fun loadBanners() {
+    private fun searchMovies(query: String) {
         scope.launch {
             try {
-                val banners = ApiService.fetchBanners()
-                // TODO: Set up banner carousel
-                Toast.makeText(this@MainActivity, "Loaded ${banners.size} banners", Toast.LENGTH_SHORT).show()
+                val results = ApiService.searchMovies(query)
+                trendingAdapter.submitList(results)
+                Toast.makeText(this@MainActivity, "Found ${results.size} results", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                // Silent fail for banners
+                Toast.makeText(this@MainActivity, "Search failed", Toast.LENGTH_SHORT).show()
             }
         }
     }

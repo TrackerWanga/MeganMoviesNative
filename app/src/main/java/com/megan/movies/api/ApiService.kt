@@ -185,3 +185,60 @@ object ApiService {
         return ""
     }
 }
+
+    // Fetch action movies
+    suspend fun fetchActionMovies(): List<Movie> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder()
+                    .url("$MOVIE_BASE/homepage/action")
+                    .get()
+                    .build()
+                val response = client.newCall(request).execute()
+                val body = response.body?.string() ?: return@withContext emptyList<Movie>()
+                val data: TrendingResponse = gson.fromJson(body, TrendingResponse::class.java)
+                data.trending?.map { parseMovie(it) } ?: data.action?.map { parseMovie(it) } ?: emptyList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
+    }
+
+    // Fetch horror movies
+    suspend fun fetchHorrorMovies(): List<Movie> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder()
+                    .url("$MOVIE_BASE/homepage/horror")
+                    .get()
+                    .build()
+                val response = client.newCall(request).execute()
+                val body = response.body?.string() ?: return@withContext emptyList<Movie>()
+                val data: TrendingResponse = gson.fromJson(body, TrendingResponse::class.java)
+                data.trending?.map { parseMovie(it) } ?: emptyList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
+    }
+
+    // Fetch anime
+    suspend fun fetchAnime(): List<Movie> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder()
+                    .url("$MOVIE_BASE/homepage/anime")
+                    .get()
+                    .build()
+                val response = client.newCall(request).execute()
+                val body = response.body?.string() ?: return@withContext emptyList<Movie>()
+                val data: TrendingResponse = gson.fromJson(body, TrendingResponse::class.java)
+                data.trending?.map { parseMovie(it) } ?: emptyList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
+    }

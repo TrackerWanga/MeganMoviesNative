@@ -133,3 +133,11 @@ data class HomepageData(
     val banners: List<Banner>?,
     val trending: List<Movie>?
 )
+
+data class TrendingResponse(
+    val success: Boolean?,
+    val total: Int?,
+    val trending: List<MovieItem>?,
+    val action: List<MovieItem>? = null,
+    val movies: List<MovieItem>? = null
+)
