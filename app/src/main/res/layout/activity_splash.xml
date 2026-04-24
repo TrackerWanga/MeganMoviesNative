@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0a0e17">
@@ -19,7 +18,6 @@
             android:layout_height="120dp"
             android:layout_marginBottom="24dp">
 
-            <!-- Glass background -->
             <View
                 android:layout_width="120dp"
                 android:layout_height="120dp"
@@ -27,7 +25,6 @@
                 android:background="@drawable/splash_logo_bg"
                 android:alpha="0.3"/>
 
-            <!-- Red rounded square -->
             <ImageView
                 android:id="@+id/splashLogo"
                 android:layout_width="100dp"
@@ -36,7 +33,6 @@
                 android:src="@drawable/splash_logo_red"
                 android:contentDescription="Megan Movies Logo"/>
 
-            <!-- White M letter -->
             <TextView
                 android:id="@+id/splashLetter"
                 android:layout_width="wrap_content"
@@ -68,7 +64,7 @@
             android:id="@+id/splashSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stream & Download"
+            android:text="Stream and Download"
             android:textSize="14sp"
             android:textColor="#a1a1aa"
             android:fontFamily="sans-serif"
