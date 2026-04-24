@@ -1,6 +1,5 @@
 package com.megan.movies.api
 
-// Movie model used throughout the app
 data class Movie(
     val id: String,
     val slug: String,
@@ -18,29 +17,11 @@ data class Movie(
     val trailer: Trailer? = null
 )
 
-data class StreamOption(
-    val quality: String,
-    val url: String
-)
+data class StreamOption(val quality: String, val url: String)
+data class DownloadOption(val quality: String, val sizeMb: Int, val url: String)
+data class CastMember(val name: String, val character: String, val avatar: String)
+data class Trailer(val url: String, val duration: Int)
 
-data class DownloadOption(
-    val quality: String,
-    val sizeMb: Int,
-    val url: String
-)
-
-data class CastMember(
-    val name: String,
-    val character: String,
-    val avatar: String
-)
-
-data class Trailer(
-    val url: String,
-    val duration: Int
-)
-
-// Banner model - matches actual API response
 data class Banner(
     val title: String?,
     val subject_id: String?,
@@ -50,94 +31,81 @@ data class Banner(
     val source: String?
 )
 
-data class BannerImage(
-    val url: String?
-)
+data class BannerImage(val url: String?)
 
-// API Response models - FIXED to match actual API structure
-
-// Trending: { "success": true, "total": 40, "trending": [...] }
+// Response models
 data class TrendingResponse(
-    val success: Boolean?,
-    val total: Int?,
-    val trending: List<MovieItem>?
+    val success: Boolean? = null,
+    val total: Int? = null,
+    val trending: List<MovieItem>? = null,
+    val movies: List<MovieItem>? = null
 )
 
-// Banners: { "success": true, "total": 11, "banners": [...] }
 data class BannerResponse(
-    val success: Boolean?,
-    val total: Int?,
-    val banners: List<Banner>?
+    val success: Boolean? = null,
+    val total: Int? = null,
+    val banners: List<Banner>? = null
 )
 
-// Search: { "success": true, "results": [...] }
 data class SearchResponse(
-    val success: Boolean?,
-    val results: List<MovieItem>?
+    val success: Boolean? = null,
+    val results: List<MovieItem>? = null
 )
 
 data class MovieItem(
-    val subject_id: String?,
-    val id: String?,
-    val detail_path: String?,
-    val slug: String?,
-    val title: String?,
-    val name: String?,
-    val year: Any?,
-    val releaseDate: String?,
-    val type: String?,
-    val subjectType: Int?,
-    val rating: Double?,
-    val imdbRatingValue: Double?,
-    val genres: List<String>?,
-    val genre: String?,
-    val poster: Any?,
-    val poster_url: String?,
-    val cover: Any?,
-    val image: Any?,
-    val backdrop: String?,
-    val description: String?,
-    val plot: String?
+    val subject_id: String? = null,
+    val id: String? = null,
+    val detail_path: String? = null,
+    val slug: String? = null,
+    val title: String? = null,
+    val name: String? = null,
+    val year: Any? = null,
+    val releaseDate: String? = null,
+    val type: String? = null,
+    val subjectType: Int? = null,
+    val rating: Double? = null,
+    val imdbRatingValue: Double? = null,
+    val genres: List<String>? = null,
+    val genre: String? = null,
+    val poster: Any? = null,
+    val poster_url: String? = null,
+    val cover: Any? = null,
+    val image: Any? = null,
+    val backdrop: String? = null,
+    val description: String? = null,
+    val plot: String? = null
 )
 
 data class MovieDetailResponse(
-    val success: Boolean?,
-    val data: MovieDetailData?
+    val success: Boolean? = null,
+    val data: MovieDetailData? = null
 )
 
 data class MovieDetailData(
-    val id: String?,
-    val detail_path: String?,
-    val title: String?,
-    val year: Int?,
-    val rating: Double?,
-    val genres: List<String>?,
-    val description: String?,
-    val poster: PosterData?,
-    val backdrop: BackdropData?,
-    val streams: List<StreamData>?,
-    val downloads: List<DownloadData>?,
-    val cast: List<CastData>?,
-    val trailer: TrailerData?
+    val id: String? = null,
+    val detail_path: String? = null,
+    val title: String? = null,
+    val year: Int? = null,
+    val rating: Double? = null,
+    val genres: List<String>? = null,
+    val description: String? = null,
+    val poster: PosterData? = null,
+    val backdrop: BackdropData? = null,
+    val streams: List<StreamData>? = null,
+    val downloads: List<DownloadData>? = null,
+    val cast: List<CastData>? = null,
+    val trailer: TrailerData? = null
 )
 
-data class PosterData(val url: String?)
-data class BackdropData(val url: String?)
-data class StreamData(val quality: String?, val url: String?)
-data class DownloadData(val quality: String?, val size_mb: Int?, val url: String?)
-data class CastData(val name: String?, val character: String?, val avatar: String?)
-data class TrailerData(val url: String?, val duration: Int?)
+data class PosterData(val url: String? = null)
+data class BackdropData(val url: String? = null)
+data class StreamData(val quality: String? = null, val url: String? = null)
+data class DownloadData(val quality: String? = null, val size_mb: Int? = null, val url: String? = null)
+data class CastData(val name: String? = null, val character: String? = null, val avatar: String? = null)
+data class TrailerData(val url: String? = null, val duration: Int? = null)
 
 data class HomepageData(
-    val success: Boolean?,
-    val banners: List<Banner>?,
-    val trending: List<Movie>?
-)
-
-data class TrendingResponse(
-    val success: Boolean?,
-    val total: Int?,
-    val trending: List<MovieItem>?,
-    val action: List<MovieItem>? = null,
-    val movies: List<MovieItem>? = null
+    val success: Boolean? = null,
+    val banners: List<Banner>? = null,
+    val trending: List<Movie>? = null
 )
