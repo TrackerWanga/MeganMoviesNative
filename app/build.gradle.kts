@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
 }
 
 android {
@@ -49,9 +48,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
     
-    // Images - Glide with annotation processor
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    kapt("com.github.bumptech.glide:compiler:4.16.0")
+    // Images - Picasso (simpler, no kapt needed)
+    implementation("com.squareup.picasso:picasso:2.8")
     
     // Video Player
     implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")

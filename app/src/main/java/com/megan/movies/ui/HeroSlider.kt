@@ -10,9 +10,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.bumptech.glide.Glide
 import com.megan.movies.R
 import com.megan.movies.api.Banner
+import com.squareup.picasso.Picasso
 
 class HeroSlider(
     private val viewPager: ViewPager2,
@@ -61,9 +61,12 @@ class HeroSlider(
         dotsContainer.removeAllViews()
         banners.forEachIndexed { index, _ ->
             val dot = View(dotsContainer.context).apply {
-                val size = 12 * resources.displayMetrics.density.toInt()
+                val size = (12 * resources.displayMetrics.density).toInt()
                 layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                    setMargins(4 * resources.displayMetrics.density.toInt(), 0, 4 * resources.displayMetrics.density.toInt(), 0)
+                    setMargins(
+                        (4 * resources.displayMetrics.density).toInt(), 0,
+                        (4 * resources.displayMetrics.density).toInt(), 0
+                    )
                 }
                 setBackgroundResource(
                     if (index == 0) R.drawable.dot_active else R.drawable.dot_inactive
@@ -112,7 +115,9 @@ class BannerAdapter(
     }
     
     override fun onBindViewHolder(holder: BannerViewHolder, position: Int) {
-        holder.bind(banners[position], onClick)
+        if (position < banners.size) {
+            holder.bind(banners[position], onClick)
+        }
     }
     
     override fun getItemCount(): Int = banners.size
@@ -121,10 +126,19 @@ class BannerAdapter(
         private val image: ImageView = itemView.findViewById(R.id.bannerImage)
         
         fun bind(banner: Banner, onClick: (Banner) -> Unit) {
-            Glide.with(itemView.context)
-                .load(banner.image?.url)
-                .centerCrop()
-                .into(image)
+            val imageUrl = banner.image?.url
+            
+            if (!imageUrl.isNullOrEmpty()) {
+                Picasso.get()
+                    .load(imageUrl)
+                    .placeholder(android.R.color.darker_gray)
+                    .error(android.R.color.holo_red_dark)
+                    .centerCrop()
+                    .fit()
+                    .into(image)
+            } else {
+                image.setBackgroundColor(0xFFe50914.toInt())
+            }
             
             itemView.setOnClickListener { onClick(banner) }
         }
