@@ -1,20 +1,27 @@
 package com.megan.movies.ui
 
-import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.megan.movies.R
 import com.megan.movies.api.Banner
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
 
 class SimpleBannerAdapter(
     private val banners: List<Banner>
 ) : RecyclerView.Adapter<SimpleBannerAdapter.BannerViewHolder>() {
+    
+    private val options = RequestOptions()
+        .centerCrop()
+        .diskCacheStrategy(DiskCacheStrategy.ALL)
+        .placeholder(ColorDrawable(0xFF1a2232.toInt()))
+        .error(ColorDrawable(0xFFe50914.toInt()))
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BannerViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -24,36 +31,14 @@ class SimpleBannerAdapter(
     
     override fun onBindViewHolder(holder: BannerViewHolder, position: Int) {
         val banner = banners[position]
-        holder.titleText.text = banner.title ?: "Loading..."
+        holder.titleText.text = banner.title ?: ""
         
         val imageUrl = banner.image?.url
         
-        if (imageUrl.isNullOrEmpty()) {
-            // No image URL - show red background
-            holder.imageView.setBackgroundColor(Color.parseColor("#e50914"))
-            holder.imageView.setImageDrawable(null)
-        } else {
-            // Set placeholder immediately
-            holder.imageView.setBackgroundColor(Color.parseColor("#1a2232"))
-            
-            // Load image with Picasso
-            Picasso.get()
-                .load(imageUrl)
-                .fit()
-                .centerCrop()
-                .into(holder.imageView, object : Callback {
-                    override fun onSuccess() {
-                        // Image loaded successfully
-                        holder.imageView.setBackgroundColor(Color.TRANSPARENT)
-                    }
-                    
-                    override fun onError(e: Exception?) {
-                        // Image failed to load - show red fallback
-                        holder.imageView.setBackgroundColor(Color.parseColor("#e50914"))
-                        holder.imageView.setImageDrawable(null)
-                    }
-                })
-        }
+        Glide.with(holder.itemView.context)
+            .load(imageUrl)
+            .apply(options)
+            .into(holder.imageView)
     }
     
     override fun getItemCount(): Int = banners.size

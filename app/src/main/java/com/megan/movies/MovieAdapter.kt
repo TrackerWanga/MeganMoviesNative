@@ -1,15 +1,16 @@
 package com.megan.movies
 
-import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.megan.movies.api.Movie
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
 
 class MovieAdapter(
     private val onItemClick: (Movie) -> Unit
@@ -22,6 +23,12 @@ class MovieAdapter(
     
     private var movies = listOf<Movie>()
     private var isLoading = true
+    
+    private val options = RequestOptions()
+        .centerCrop()
+        .diskCacheStrategy(DiskCacheStrategy.ALL)
+        .placeholder(ColorDrawable(0xFF1a2232.toInt()))
+        .error(ColorDrawable(0xFFe50914.toInt()))
     
     fun submitList(list: List<Movie>) {
         movies = list
@@ -72,26 +79,10 @@ class MovieAdapter(
             year.text = movie.year?.toString() ?: ""
             rating.text = if (movie.rating != null) "⭐ ${movie.rating}" else ""
             
-            if (movie.poster.isNotEmpty()) {
-                // Set placeholder immediately
-                poster.setBackgroundColor(Color.parseColor("#1a2232"))
-                
-                Picasso.get()
-                    .load(movie.poster)
-                    .resize(300, 450)
-                    .centerCrop()
-                    .into(poster, object : Callback {
-                        override fun onSuccess() {
-                            poster.setBackgroundColor(Color.TRANSPARENT)
-                        }
-                        
-                        override fun onError(e: Exception?) {
-                            poster.setBackgroundColor(Color.parseColor("#e50914"))
-                        }
-                    })
-            } else {
-                poster.setBackgroundColor(Color.parseColor("#e50914"))
-            }
+            Glide.with(itemView.context)
+                .load(movie.poster)
+                .apply(options)
+                .into(poster)
             
             itemView.setOnClickListener { onItemClick(movie) }
         }
