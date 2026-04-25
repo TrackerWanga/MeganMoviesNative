@@ -9,7 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.megan.movies.R
+import com.megan.movies.MovieAdapter
 import com.megan.movies.api.Movie
+import com.megan.movies.util.ShimmerAdapter
 
 class SectionRow @JvmOverloads constructor(
     context: Context,
@@ -22,6 +24,8 @@ class SectionRow @JvmOverloads constructor(
     private val movieRecycler: RecyclerView
     private val errorText: TextView
     private val retryButton: View
+    
+    private var onMovieClick: ((Movie) -> Unit)? = null
     
     init {
         LayoutInflater.from(context).inflate(R.layout.view_section_row, this, true)
@@ -54,9 +58,12 @@ class SectionRow @JvmOverloads constructor(
         errorText.visibility = View.GONE
         retryButton.visibility = View.GONE
         
-        movieRecycler.adapter = MovieAdapter(onClick).also {
-            it.submitList(movies)
+        onMovieClick = onClick
+        val adapter = MovieAdapter { movie ->
+            onMovieClick?.invoke(movie)
         }
+        adapter.submitList(movies)
+        movieRecycler.adapter = adapter
     }
     
     fun showError(onRetry: () -> Unit) {
