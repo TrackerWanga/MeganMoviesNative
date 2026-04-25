@@ -1,146 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#0a0e17">
+    android:gravity="center"
+    android:background="#0a0e17"
+    android:orientation="vertical">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Search Bar -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-                
-                <EditText
-                    android:id="@+id/searchInput"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:hint="Search movies, series..."
-                    android:textColorHint="#a1a1aa"
-                    android:textColor="#ffffff"
-                    android:background="@drawable/search_background"
-                    android:paddingHorizontal="16dp"
-                    android:imeOptions="actionSearch"
-                    android:inputType="text"/>
-            </LinearLayout>
-
-            <!-- Hero Slider -->
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/heroViewPager"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"/>
-
-            <!-- Banner Info Overlay -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp"
-                android:gravity="center_vertical">
-                
-                <TextView
-                    android:id="@+id/bannerTitle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="#ffffff"
-                    android:textSize="20sp"
-                    android:textStyle="bold"/>
-                
-                <TextView
-                    android:id="@+id/bannerType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/type_badge"
-                    android:textColor="#00d4ff"
-                    android:textSize="10sp"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="4dp"
-                    android:text="MOVIE"/>
-            </LinearLayout>
-
-            <!-- Dots Indicator -->
-            <LinearLayout
-                android:id="@+id/dotsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:paddingBottom="8dp"/>
-
-            <!-- Trending Row -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🔥 Trending Now"
-                android:textSize="18sp"
-                android:textColor="#ffffff"
-                android:textStyle="bold"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="16dp"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/trendingRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="8dp"/>
-
-        </LinearLayout>
-    </ScrollView>
-
-    <!-- Footer -->
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="16dp"
-        android:background="#131a28">
+        android:text="Megan"
+        android:textSize="32sp"
+        android:textColor="#e50914"
+        android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/footerLink"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📱 Open movies.megan.qzz.io"
-            android:textColor="#00d4ff"
-            android:textSize="14sp"
-            android:padding="8dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Made with ❤️ by Tracker Wanga"
-            android:textColor="#a1a1aa"
-            android:textSize="12sp"
-            android:paddingTop="4dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="© 2026 Megan Movies. All rights reserved."
-            android:textColor="#666666"
-            android:textSize="10sp"/>
-
-    </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="App is working!"
+        android:textSize="16sp"
+        android:textColor="#ffffff"
+        android:layout_marginTop="16dp"/>
 
 </LinearLayout>

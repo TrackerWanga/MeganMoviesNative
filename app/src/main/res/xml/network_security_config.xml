@@ -5,8 +5,4 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">pbcdnw.aoneroom.com</domain>
-        <domain includeSubdomains="true">movieapi.megan.qzz.io</domain>
-    </domain-config>
 </network-security-config>
