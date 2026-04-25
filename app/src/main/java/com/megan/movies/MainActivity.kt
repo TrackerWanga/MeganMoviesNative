@@ -1,301 +1,275 @@
 package com.megan.movies
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.megan.movies.api.ApiService
+import com.megan.movies.api.Banner
 import com.megan.movies.api.Movie
-import com.megan.movies.ui.SectionRow
-import com.megan.movies.ui.SimpleBannerAdapter
-import com.megan.movies.util.SequentialLoader
+import com.megan.movies.ui.HeroSlider
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     
+    private lateinit var heroSlider: HeroSlider
     private val scope = CoroutineScope(Dispatchers.Main + Job())
-    private var currentPage = 0
-    private var banners = listOf<com.megan.movies.api.Banner>()
     
     // Section rows
-    private lateinit var trendingRow: SectionRow
-    private lateinit var actionRow: SectionRow
-    private lateinit var horrorRow: SectionRow
-    private lateinit var romanceRow: SectionRow
-    private lateinit var adventureRow: SectionRow
-    private lateinit var animeRow: SectionRow
-    private lateinit var kdramaRow: SectionRow
-    private lateinit var cdramaRow: SectionRow
-    private lateinit var turkishRow: SectionRow
-    private lateinit var sadramaRow: SectionRow
-    private lateinit var blackshowsRow: SectionRow
-    private lateinit var hotshortsRow: SectionRow
-    private lateinit var smartstartRow: SectionRow
-    private lateinit var upcomingRow: SectionRow
+    private lateinit var trendingRow: SectionRowWrapper
+    private lateinit var popularMoviesRow: SectionRowWrapper
+    private lateinit var popularSeriesRow: SectionRowWrapper
+    private lateinit var actionRow: SectionRowWrapper
+    private lateinit var horrorRow: SectionRowWrapper
+    private lateinit var romanceRow: SectionRowWrapper
+    private lateinit var adventureRow: SectionRowWrapper
+    private lateinit var animeRow: SectionRowWrapper
+    private lateinit var kdramaRow: SectionRowWrapper
+    private lateinit var upcomingRow: SectionRowWrapper
+    
+    // Search
+    private lateinit var searchInput: EditText
+    private lateinit var searchContainer: LinearLayout
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_full)
         
-        initSectionRows()
-        showAllShimmer()
+        initViews()
+        setupSearch()
         startSequentialLoading()
     }
     
-    private fun initSectionRows() {
-        trendingRow = findViewById(R.id.trendingRow)
-        actionRow = findViewById(R.id.actionRow)
-        horrorRow = findViewById(R.id.horrorRow)
-        romanceRow = findViewById(R.id.romanceRow)
-        adventureRow = findViewById(R.id.adventureRow)
-        animeRow = findViewById(R.id.animeRow)
-        kdramaRow = findViewById(R.id.kdramaRow)
-        cdramaRow = findViewById(R.id.cdramaRow)
-        turkishRow = findViewById(R.id.turkishRow)
-        sadramaRow = findViewById(R.id.sadramaRow)
-        blackshowsRow = findViewById(R.id.blackshowsRow)
-        hotshortsRow = findViewById(R.id.hotshortsRow)
-        smartstartRow = findViewById(R.id.smartstartRow)
-        upcomingRow = findViewById(R.id.upcomingRow)
+    private fun initViews() {
+        // Hero slider
+        val viewPager = findViewById<ViewPager2>(R.id.heroViewPager)
+        val dotsContainer = findViewById<LinearLayout>(R.id.dotsContainer)
+        val bannerTitle = findViewById<TextView>(R.id.bannerTitle)
+        val bannerType = findViewById<TextView>(R.id.bannerType)
+        heroSlider = HeroSlider(viewPager, dotsContainer, bannerTitle, bannerType) { banner ->
+            openBannerDetail(banner)
+        }
         
-        trendingRow.setTitle("🔥 Trending Now")
-        actionRow.setTitle("💥 Action Movies")
-        horrorRow.setTitle("😱 Horror Movies")
-        romanceRow.setTitle("💕 Romance Movies")
-        adventureRow.setTitle("🗺️ Adventure Movies")
-        animeRow.setTitle("🎌 Anime")
-        kdramaRow.setTitle("🇰🇷 K-Drama")
-        cdramaRow.setTitle("🇨🇳 C-Drama")
-        turkishRow.setTitle("🇹🇷 Turkish Drama")
-        sadramaRow.setTitle("🇿🇦 South African Drama")
-        blackshowsRow.setTitle("✊🏾 Black Shows")
-        hotshortsRow.setTitle("🔥 Hot Short TV")
-        smartstartRow.setTitle("🧸 Smart Start")
-        upcomingRow.setTitle("📅 Coming Soon")
+        // Search
+        searchInput = findViewById(R.id.searchInput)
+        searchContainer = findViewById(R.id.searchContainer)
+        
+        // Section rows
+        trendingRow = SectionRowWrapper(findViewById(R.id.trendingRow), "Trending Now")
+        popularMoviesRow = SectionRowWrapper(findViewById(R.id.popularMoviesRow), "Popular Movies")
+        popularSeriesRow = SectionRowWrapper(findViewById(R.id.popularSeriesRow), "Popular Series")
+        actionRow = SectionRowWrapper(findViewById(R.id.actionRow), "Action Movies")
+        horrorRow = SectionRowWrapper(findViewById(R.id.horrorRow), "Horror Movies")
+        romanceRow = SectionRowWrapper(findViewById(R.id.romanceRow), "Romance Movies")
+        adventureRow = SectionRowWrapper(findViewById(R.id.adventureRow), "Adventure Movies")
+        animeRow = SectionRowWrapper(findViewById(R.id.animeRow), "Anime")
+        kdramaRow = SectionRowWrapper(findViewById(R.id.kdramaRow), "K-Drama")
+        upcomingRow = SectionRowWrapper(findViewById(R.id.upcomingRow), "Upcoming")
+        
+        // Footer
+        findViewById<TextView>(R.id.footerLink)?.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://movies.megan.qzz.io")))
+        }
     }
     
-    private fun showAllShimmer() {
-        listOf(trendingRow, actionRow, horrorRow, romanceRow, adventureRow,
-            animeRow, kdramaRow, cdramaRow, turkishRow, sadramaRow,
-            blackshowsRow, hotshortsRow, smartstartRow, upcomingRow
-        ).forEach { it.showShimmer() }
+    private fun setupSearch() {
+        searchInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                val query = searchInput.text.toString().trim()
+                if (query.isNotBlank()) performSearch(query)
+                true
+            } else false
+        }
     }
     
     private fun startSequentialLoading() {
-        val loader = SequentialLoader(scope) { section, status ->
-            // Update section row based on status
-            when (section) {
-                "trending" -> handleSectionStatus(trendingRow, status)
-                "action" -> handleSectionStatus(actionRow, status)
-                "horror" -> handleSectionStatus(horrorRow, status)
-                "romance" -> handleSectionStatus(romanceRow, status)
-                "adventure" -> handleSectionStatus(adventureRow, status)
-                "anime" -> handleSectionStatus(animeRow, status)
-                "kdrama" -> handleSectionStatus(kdramaRow, status)
-                "cdrama" -> handleSectionStatus(cdramaRow, status)
-                "turkish" -> handleSectionStatus(turkishRow, status)
-                "sadrama" -> handleSectionStatus(sadramaRow, status)
-                "blackshows" -> handleSectionStatus(blackshowsRow, status)
-                "hotshorts" -> handleSectionStatus(hotshortsRow, status)
-                "smartstart" -> handleSectionStatus(smartstartRow, status)
-                "upcoming" -> handleSectionStatus(upcomingRow, status)
-            }
-        }
-        
-        val sections = listOf(
-            SequentialLoader.Section("banners") {
-                banners = ApiService.fetchBanners()
-                withContext(Dispatchers.Main) {
-                    setupBannerSlider()
-                }
-            },
-            SequentialLoader.Section("trending") {
-                val data = ApiService.fetchTrending()
-                withContext(Dispatchers.Main) {
-                    trendingRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("action") {
-                val data = ApiService.fetchActionMovies()
-                withContext(Dispatchers.Main) {
-                    actionRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("horror") {
-                val data = ApiService.fetchHorrorMovies()
-                withContext(Dispatchers.Main) {
-                    horrorRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("romance") {
-                val data = ApiService.fetchRomanceMovies()
-                withContext(Dispatchers.Main) {
-                    romanceRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("adventure") {
-                val data = ApiService.fetchAdventureMovies()
-                withContext(Dispatchers.Main) {
-                    adventureRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("anime") {
-                val data = ApiService.fetchAnime()
-                withContext(Dispatchers.Main) {
-                    animeRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("kdrama") {
-                val data = ApiService.fetchKDrama()
-                withContext(Dispatchers.Main) {
-                    kdramaRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("cdrama") {
-                val data = ApiService.fetchCDrama()
-                withContext(Dispatchers.Main) {
-                    cdramaRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("turkish") {
-                val data = ApiService.fetchTurkishDrama()
-                withContext(Dispatchers.Main) {
-                    turkishRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("sadrama") {
-                val data = ApiService.fetchSADrama()
-                withContext(Dispatchers.Main) {
-                    sadramaRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("blackshows") {
-                val data = ApiService.fetchBlackShows()
-                withContext(Dispatchers.Main) {
-                    blackshowsRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("hotshorts") {
-                val data = ApiService.fetchHotShorts()
-                withContext(Dispatchers.Main) {
-                    hotshortsRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("smartstart") {
-                val data = ApiService.fetchSmartStart()
-                withContext(Dispatchers.Main) {
-                    smartstartRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            },
-            SequentialLoader.Section("upcoming") {
-                val data = ApiService.fetchUpcoming()
-                withContext(Dispatchers.Main) {
-                    upcomingRow.showMovies(data) { movie ->
-                        Toast.makeText(this@MainActivity, movie.title, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        )
+        // Show shimmer in all rows first
+        listOf(trendingRow, popularMoviesRow, popularSeriesRow, actionRow,
+            horrorRow, romanceRow, adventureRow, animeRow, kdramaRow, upcomingRow
+        ).forEach { it.showShimmer() }
         
         scope.launch {
-            loader.loadSequentially(sections)
+            // 1. Load banners first (most important)
+            loadBanners()
+            
+            // 2. Load trending
+            loadSection("trending") {
+                val data = ApiService.fetchTrending()
+                trendingRow.showMovies(data.filter { it.type == "movie" || it.type == "tv" }) { openMovieDetail(it) }
+                // Also split into popular movies/series
+                popularMoviesRow.showMovies(data.filter { it.type == "movie" }.take(10)) { openMovieDetail(it) }
+                popularSeriesRow.showMovies(data.filter { it.type == "tv" }.take(10)) { openMovieDetail(it) }
+            }
+            
+            // 3. Load action
+            loadSection("action") {
+                val data = ApiService.fetchActionMovies()
+                actionRow.showMovies(data) { openMovieDetail(it) }
+            }
+            
+            // 4. Load horror
+            loadSection("horror") {
+                val data = ApiService.fetchHorrorMovies()
+                horrorRow.showMovies(data) { openMovieDetail(it) }
+            }
+            
+            // 5. Load romance
+            loadSection("romance") {
+                val data = ApiService.fetchRomanceMovies()
+                romanceRow.showMovies(data) { openMovieDetail(it) }
+            }
+            
+            // 6. Load adventure
+            loadSection("adventure") {
+                val data = ApiService.fetchAdventureMovies()
+                adventureRow.showMovies(data) { openMovieDetail(it) }
+            }
+            
+            // 7. Load anime
+            loadSection("anime") {
+                val data = ApiService.fetchAnime()
+                animeRow.showMovies(data) { openMovieDetail(it) }
+            }
+            
+            // 8. Load K-Drama
+            loadSection("kdrama") {
+                val data = ApiService.fetchKDrama()
+                kdramaRow.showMovies(data) { openMovieDetail(it) }
+            }
+            
+            // 9. Load upcoming
+            loadSection("upcoming") {
+                val data = ApiService.fetchUpcoming()
+                upcomingRow.showMovies(data) { openMovieDetail(it) }
+            }
         }
     }
     
-    private fun handleSectionStatus(row: SectionRow, status: SequentialLoader.LoadStatus) {
-        when (status) {
-            SequentialLoader.LoadStatus.SUCCESS -> {} // Already handled in section
-            SequentialLoader.LoadStatus.ERROR -> row.showError {
-                // Retry logic here
-            }
-            SequentialLoader.LoadStatus.LOADING -> row.showShimmer()
-        }
-    }
-    
-    private fun setupBannerSlider() {
-        val viewPager = findViewById<ViewPager2>(R.id.heroViewPager)
-        val dotsContainer = findViewById<LinearLayout>(R.id.dotsContainer)
-        val titleText = findViewById<TextView>(R.id.bannerTitle)
-        
-        viewPager.adapter = SimpleBannerAdapter(banners)
-        titleText.text = banners.firstOrNull()?.title ?: ""
-        
-        setupDots(dotsContainer, banners.size)
-        
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                currentPage = position
-                titleText.text = banners.getOrNull(position)?.title ?: ""
-                updateDots(dotsContainer, banners.size, position)
-            }
-        })
-        
-        if (banners.size > 1) {
-            val handler = android.os.Handler(android.os.Looper.getMainLooper())
-            val runnable = object : Runnable {
-                override fun run() {
-                    currentPage = (currentPage + 1) % banners.size
-                    viewPager.setCurrentItem(currentPage, true)
-                    handler.postDelayed(this, 5000)
+    private suspend fun loadBanners() {
+        try {
+            withTimeout(5000L) {
+                val banners = ApiService.fetchBanners()
+                withContext(Dispatchers.Main) {
+                    heroSlider.setBanners(banners)
                 }
             }
-            handler.postDelayed(runnable, 5000)
+        } catch (e: Exception) {
+            // Banners failed - that's OK, other sections will still load
         }
     }
     
-    private fun setupDots(container: LinearLayout, count: Int) {
-        container.removeAllViews()
-        for (i in 0 until count) {
-            val dot = android.view.View(this).apply {
-                val size = (10 * resources.displayMetrics.density).toInt()
-                layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                    setMargins(4, 0, 4, 0)
+    private fun loadSection(name: String, loader: suspend () -> Unit) {
+        scope.launch {
+            try {
+                withTimeout(5000L) {
+                    loader()
                 }
-                setBackgroundResource(if (i == 0) R.drawable.dot_active else R.drawable.dot_inactive)
+            } catch (e: TimeoutCancellationException) {
+                // Timeout - show error state
+                showSectionError(name)
+            } catch (e: Exception) {
+                // Other error - show error state
+                showSectionError(name)
             }
-            container.addView(dot)
         }
     }
     
-    private fun updateDots(container: LinearLayout, count: Int, current: Int) {
-        for (i in 0 until container.childCount) {
-            container.getChildAt(i).setBackgroundResource(
-                if (i == current) R.drawable.dot_active else R.drawable.dot_inactive
-            )
+    private fun showSectionError(sectionName: String) {
+        // Find the section row and show error
+        val row = when (sectionName) {
+            "trending" -> trendingRow
+            "action" -> actionRow
+            "horror" -> horrorRow
+            "romance" -> romanceRow
+            "adventure" -> adventureRow
+            "anime" -> animeRow
+            "kdrama" -> kdramaRow
+            "upcoming" -> upcomingRow
+            else -> null
         }
+        row?.showError()
+    }
+    
+    private fun performSearch(query: String) {
+        scope.launch {
+            try {
+                withTimeout(5000L) {
+                    val results = ApiService.searchMovies(query)
+                    withContext(Dispatchers.Main) {
+                        // Show search results in trending row
+                        trendingRow.showMovies(results) { openMovieDetail(it) }
+                        // Hide other rows
+                        listOf(popularMoviesRow, popularSeriesRow, actionRow,
+                            horrorRow, romanceRow, adventureRow, animeRow, kdramaRow, upcomingRow
+                        ).forEach { it.hide() }
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Search failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun openBannerDetail(banner: Banner) {
+        // Navigate to detail page (to be built later)
+        Toast.makeText(this, banner.title, Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun openMovieDetail(movie: Movie) {
+        // Navigate to detail page (to be built later)  
+        Toast.makeText(this, "${movie.title} (${movie.year})", Toast.LENGTH_SHORT).show()
     }
     
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
+    }
+}
+
+// Helper class to manage a section row
+class SectionRowWrapper(
+    private val container: View,
+    private val title: String
+) {
+    private val titleView: TextView = container.findViewById(R.id.sectionTitle)
+    private val recycler: RecyclerView = container.findViewById(R.id.movieRecycler)
+    private val shimmer: RecyclerView = container.findViewById(R.id.shimmerRecycler)
+    private val errorView: View = container.findViewById(R.id.errorLayout)
+    
+    init {
+        titleView.text = title
+        recycler.layoutManager = LinearLayoutManager(container.context, LinearLayoutManager.HORIZONTAL, false)
+        shimmer.layoutManager = LinearLayoutManager(container.context, LinearLayoutManager.HORIZONTAL, false)
+    }
+    
+    fun showShimmer() {
+        recycler.visibility = View.GONE
+        shimmer.visibility = View.VISIBLE
+        errorView.visibility = View.GONE
+    }
+    
+    fun showMovies(movies: List<Movie>, onClick: (Movie) -> Unit) {
+        recycler.visibility = View.VISIBLE
+        shimmer.visibility = View.GONE
+        errorView.visibility = View.GONE
+        
+        val adapter = MovieAdapter(onClick)
+        adapter.submitList(movies)
+        recycler.adapter = adapter
+    }
+    
+    fun showError() {
+        recycler.visibility = View.GONE
+        shimmer.visibility = View.GONE
+        errorView.visibility = View.VISIBLE
+    }
+    
+    fun hide() {
+        container.visibility = View.GONE
     }
 }
