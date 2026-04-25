@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0a0e17">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎬 Megan Movies"
+        android:textSize="18sp"
+        android:textColor="#e50914"
+        android:textStyle="bold"
+        android:padding="12dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Banner -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/heroViewPager"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"/>
+
+            <TextView
+                android:id="@+id/bannerTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="12dp"
+                android:paddingTop="6dp"/>
+
+            <LinearLayout
+                android:id="@+id/dotsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="8dp"/>
+
+            <!-- Section Rows -->
+            <com.megan.movies.ui.SectionRow android:id="@+id/trendingRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/actionRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/horrorRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/romanceRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/adventureRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/animeRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/kdramaRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/cdramaRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/turkishRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/sadramaRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/blackshowsRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/hotshortsRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/smartstartRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <com.megan.movies.ui.SectionRow android:id="@+id/upcomingRow"
+                android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+            <!-- Footer -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Made with ❤️ by Tracker Wanga"
+                android:textColor="#666666"
+                android:textSize="12sp"
+                android:padding="24dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
