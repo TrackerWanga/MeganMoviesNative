@@ -1,5 +1,6 @@
 package com.megan.movies
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,7 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.megan.movies.api.Movie
-import com.megan.movies.util.ImageLoader
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 
 class MovieAdapter(
     private val onItemClick: (Movie) -> Unit
@@ -41,7 +43,7 @@ class MovieAdapter(
             VIEW_TYPE_SHIMMER -> {
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_shimmer, parent, false)
-                ShimmerViewHolder(view)
+                object : RecyclerView.ViewHolder(view) {}
             }
             else -> {
                 val view = LayoutInflater.from(parent.context)
@@ -52,12 +54,8 @@ class MovieAdapter(
     }
     
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (holder) {
-            is MovieViewHolder -> {
-                if (position < movies.size) {
-                    holder.bind(movies[position])
-                }
-            }
+        if (holder is MovieViewHolder && position < movies.size) {
+            holder.bind(movies[position])
         }
     }
     
@@ -74,20 +72,28 @@ class MovieAdapter(
             year.text = movie.year?.toString() ?: ""
             rating.text = if (movie.rating != null) "⭐ ${movie.rating}" else ""
             
-            ImageLoader.load(
-                url = movie.poster,
-                imageView = poster,
-                width = 300,
-                height = 450,
-                placeholder = android.R.color.darker_gray,
-                error = 0xFFe50914.toInt(),
-                onSuccess = { poster.setBackgroundResource(0) },
-                onError = { poster.setBackgroundColor(0xFFe50914.toInt()) }
-            )
+            if (movie.poster.isNotEmpty()) {
+                // Set placeholder immediately
+                poster.setBackgroundColor(Color.parseColor("#1a2232"))
+                
+                Picasso.get()
+                    .load(movie.poster)
+                    .resize(300, 450)
+                    .centerCrop()
+                    .into(poster, object : Callback {
+                        override fun onSuccess() {
+                            poster.setBackgroundColor(Color.TRANSPARENT)
+                        }
+                        
+                        override fun onError(e: Exception?) {
+                            poster.setBackgroundColor(Color.parseColor("#e50914"))
+                        }
+                    })
+            } else {
+                poster.setBackgroundColor(Color.parseColor("#e50914"))
+            }
             
             itemView.setOnClickListener { onItemClick(movie) }
         }
     }
-    
-    inner class ShimmerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 }

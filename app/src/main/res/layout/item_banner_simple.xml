@@ -10,16 +10,21 @@
         android:scaleType="centerCrop"
         android:background="#1a2232"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:background="@drawable/banner_gradient"/>
+
     <TextView
         android:id="@+id/bannerTitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:textColor="#ffffff"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:padding="16dp"
         android:shadowColor="#000000"
-        android:shadowRadius="4"/>
+        android:shadowRadius="6"/>
 
 </FrameLayout>
