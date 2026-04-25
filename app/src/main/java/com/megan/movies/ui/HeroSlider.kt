@@ -110,7 +110,7 @@ class BannerAdapter(
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BannerViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_banner, parent, false)
+            .inflate(R.layout.item_banner_simple, parent, false)
         return BannerViewHolder(view)
     }
     
@@ -126,15 +126,15 @@ class BannerAdapter(
         private val image: ImageView = itemView.findViewById(R.id.bannerImage)
         
         fun bind(banner: Banner, onClick: (Banner) -> Unit) {
+            val imageUrl = banner.image?.url
+            val width = itemView.context.resources.displayMetrics.widthPixels
+            val height = (250 * itemView.context.resources.displayMetrics.density).toInt()
+            
             ImageLoader.load(
-                url = banner.image?.url,
+                url = imageUrl,
                 imageView = image,
-                width = itemView.context.resources.displayMetrics.widthPixels,
-                height = (200 * itemView.context.resources.displayMetrics.density).toInt(),
-                placeholder = android.R.color.darker_gray,
-                error = 0xFFe50914.toInt(),
-                onSuccess = { /* Image loaded successfully */ },
-                onError = { image.setBackgroundColor(0xFFe50914.toInt()) }
+                width = width,
+                height = height
             )
             
             itemView.setOnClickListener { onClick(banner) }
