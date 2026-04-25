@@ -1,117 +1,92 @@
 package com.megan.movies
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.megan.movies.api.ApiService
-import com.megan.movies.ui.HeroSlider
-import com.megan.movies.util.ImageLoader
+import com.megan.movies.ui.SimpleBannerAdapter
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     
-    private lateinit var heroSlider: HeroSlider
-    private lateinit var trendingAdapter: MovieAdapter
     private val scope = CoroutineScope(Dispatchers.Main + Job())
+    private var currentPage = 0
+    private var banners = listOf<com.megan.movies.api.Banner>()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_simple)
         
-        setupHeroSlider()
-        setupTrending()
-        setupFooter()
-        setupSearch()
-        
-        trendingAdapter.showShimmer()
-        loadAllSections()
+        loadBanners()
     }
     
-    private fun setupHeroSlider() {
-        val viewPager = findViewById<ViewPager2>(R.id.heroViewPager)
-        val dotsContainer = findViewById<LinearLayout>(R.id.dotsContainer)
-        val titleText = findViewById<TextView>(R.id.bannerTitle)
-        val typeText = findViewById<TextView>(R.id.bannerType)
-        
-        heroSlider = HeroSlider(viewPager, dotsContainer, titleText, typeText) { banner ->
-            Toast.makeText(this, "Opening: ${banner.title}", Toast.LENGTH_SHORT).show()
-        }
-    }
-    
-    private fun setupTrending() {
-        val trendingRecycler = findViewById<RecyclerView>(R.id.trendingRecycler)
-        trendingRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        trendingAdapter = MovieAdapter { movie ->
-            Toast.makeText(this, "Clicked: ${movie.title}", Toast.LENGTH_SHORT).show()
-        }
-        trendingRecycler.adapter = trendingAdapter
-    }
-    
-    private fun setupSearch() {
-        val searchInput = findViewById<EditText>(R.id.searchInput)
-        searchInput.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
-                val query = searchInput.text.toString()
-                if (query.isNotBlank()) searchMovies(query)
-                true
-            } else false
-        }
-    }
-    
-    private fun setupFooter() {
-        val footerLink = findViewById<TextView>(R.id.footerLink)
-        footerLink.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://movies.megan.qzz.io")))
-        }
-    }
-    
-    private fun loadAllSections() {
+    private fun loadBanners() {
         scope.launch {
             try {
-                val banners = ApiService.fetchBanners()
-                heroSlider.setBanners(banners)
-                val trending = ApiService.fetchTrending()
-                trendingAdapter.submitList(trending)
-                val posterUrls = trending.mapNotNull { it.poster }.filter { it.isNotEmpty() }
-                val bannerUrls = banners.mapNotNull { it.image?.url }.filter { it.isNotEmpty() }
-                ImageLoader.preload(posterUrls + bannerUrls)
-            } catch (e: Exception) {
-                try {
-                    delay(1000)
-                    val banners = ApiService.fetchBanners()
-                    heroSlider.setBanners(banners)
-                    val trending = ApiService.fetchTrending()
-                    trendingAdapter.submitList(trending)
-                } catch (e2: Exception) {
-                    Toast.makeText(this@MainActivity, "Failed to load content", Toast.LENGTH_LONG).show()
+                banners = ApiService.fetchBanners()
+                
+                val viewPager = findViewById<ViewPager2>(R.id.heroViewPager)
+                val titleText = findViewById<TextView>(R.id.bannerTitle)
+                val dotsContainer = findViewById<LinearLayout>(R.id.dotsContainer)
+                
+                viewPager.adapter = SimpleBannerAdapter(banners)
+                titleText.text = banners.firstOrNull()?.title ?: ""
+                
+                // Setup dots
+                setupDots(dotsContainer, banners.size)
+                
+                // Page change listener
+                viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        currentPage = position
+                        titleText.text = banners.getOrNull(position)?.title ?: ""
+                        updateDots(dotsContainer, banners.size, position)
+                    }
+                })
+                
+                // Auto-rotate
+                if (banners.size > 1) {
+                    val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                    val runnable = object : Runnable {
+                        override fun run() {
+                            currentPage = (currentPage + 1) % banners.size
+                            viewPager.setCurrentItem(currentPage, true)
+                            handler.postDelayed(this, 5000)
+                        }
+                    }
+                    handler.postDelayed(runnable, 5000)
                 }
-            }
-        }
-    }
-    
-    private fun searchMovies(query: String) {
-        trendingAdapter.showShimmer()
-        scope.launch {
-            try {
-                val results = ApiService.searchMovies(query)
-                trendingAdapter.submitList(results)
+                
             } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Search failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Failed to load banners: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
     
-    override fun onBackPressed() {
-        // If there are fragments on the back stack, pop them
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
-        } else {
-            super.onBackPressed()
+    private fun setupDots(container: LinearLayout, count: Int) {
+        container.removeAllViews()
+        for (i in 0 until count) {
+            val dot = android.view.View(this).apply {
+                val size = (10 * resources.displayMetrics.density).toInt()
+                layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                    setMargins(4, 0, 4, 0)
+                }
+                setBackgroundResource(
+                    if (i == 0) R.drawable.dot_active else R.drawable.dot_inactive
+                )
+            }
+            container.addView(dot)
+        }
+    }
+    
+    private fun updateDots(container: LinearLayout, count: Int, current: Int) {
+        for (i in 0 until container.childCount) {
+            container.getChildAt(i).setBackgroundResource(
+                if (i == current) R.drawable.dot_active else R.drawable.dot_inactive
+            )
         }
     }
     

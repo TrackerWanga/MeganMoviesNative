@@ -1,86 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
     android:background="#0a0e17">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:padding="32dp">
+        android:text="MEGAN MOVIES"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="#e50914"/>
 
-        <!-- Logo Container with Glass Effect -->
-        <FrameLayout
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="24dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stream and Download"
+        android:textSize="14sp"
+        android:textColor="#a1a1aa"
+        android:layout_marginTop="8dp"/>
 
-            <View
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center"
-                android:background="@drawable/splash_logo_bg"
-                android:alpha="0.3"/>
-
-            <ImageView
-                android:id="@+id/splashLogo"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center"
-                android:src="@drawable/splash_logo_red"
-                android:contentDescription="Megan Movies Logo"/>
-
-            <TextView
-                android:id="@+id/splashLetter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="M"
-                android:textSize="48sp"
-                android:textStyle="bold"
-                android:textColor="#ffffff"
-                android:fontFamily="sans-serif-black"/>
-
-        </FrameLayout>
-
-        <!-- Title -->
-        <TextView
-            android:id="@+id/splashTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="MEGAN MOVIES"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:fontFamily="sans-serif-black"
-            android:alpha="0"
-            android:translationY="30dp"/>
-
-        <!-- Subtitle -->
-        <TextView
-            android:id="@+id/splashSubtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stream and Download"
-            android:textSize="14sp"
-            android:textColor="#a1a1aa"
-            android:fontFamily="sans-serif"
-            android:alpha="0"
-            android:layout_marginTop="8dp"/>
-
-        <!-- Progress Bar -->
-        <ProgressBar
-            android:id="@+id/splashProgress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="200dp"
-            android:layout_height="4dp"
-            android:layout_marginTop="32dp"
-            android:progressDrawable="@drawable/progress_red"
-            android:progress="0"/>
-
-    </LinearLayout>
-
-</FrameLayout>
+</LinearLayout>
